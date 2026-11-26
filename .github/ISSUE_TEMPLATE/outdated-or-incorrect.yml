@@ -24,7 +24,7 @@ body:
     attributes:
       label: Skill version or commit
       description: Release tag or commit SHA where the claim appears.
-      placeholder: v1.0.0, or main@abc1234
+      placeholder: v1.0.0, or master@abc1234
     validations:
       required: true
   - type: textarea
