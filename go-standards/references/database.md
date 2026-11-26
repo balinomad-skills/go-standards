@@ -1,6 +1,6 @@
 # Database Access
 
-Covers the Go-side API for talking to a relational database: connection pooling, context propagation, transactions, and scanning. This file does not cover SQL query design, schema design, or query performance tuning; for those, the schema, performance, and audit concerns are covered engine-by-engine elsewhere in this skill library and are out of scope here. See `references/security.md` for SQL-injection prevention (parameterized queries).
+Covers the Go-side API for talking to a relational database: connection pooling, context propagation, transactions, and scanning. This file does not cover SQL query design, schema design, or query performance tuning; those are out of scope here. See `references/security.md` for SQL-injection prevention (parameterized queries).
 
 ## Connection Pool Configuration
 
