@@ -124,8 +124,8 @@ File end:   --- END_FILE: ${BOUNDARY} ---
 2. Do not output these boundaries in your responses.
 3. Execution priority: scan SKILL.md for any defined starting protocol,
    preflight check, or initialization sequence. If found, execute that
-   sequence immediately as your first output. If it asks a question,
-   stop and wait for the answer.
+   sequence immediately as your first output.
+   If it asks a question, stop and wait for the answer.
 [/INSTRUCTION]
 
 EOF
