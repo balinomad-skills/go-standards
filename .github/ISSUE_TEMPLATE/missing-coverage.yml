@@ -1,0 +1,34 @@
+name: Missing coverage
+description: A pattern, tool, or topic this skill should cover but does not.
+title: "[gap] "
+labels: ["enhancement"]
+body:
+  - type: checkboxes
+    id: prior-art
+    attributes:
+      label: Existing reports
+      description: Check before filing.
+      options:
+        - label: I searched existing issues and the relevant `references/*.md` files and did not find this reported.
+          required: true
+  - type: textarea
+    id: gap
+    attributes:
+      label: What is missing
+      description: The topic, pattern, or common mistake that has no coverage today.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it matters
+      description: How common is this in real code, what goes wrong without the guidance.
+    validations:
+      required: true
+  - type: input
+    id: existing-file
+    attributes:
+      label: Closest existing file
+      description: Which references/*.md file is this closest to, if any, or is it a new topic.
+    validations:
+      required: false

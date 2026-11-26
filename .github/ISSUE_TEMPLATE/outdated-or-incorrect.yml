@@ -1,0 +1,51 @@
+name: Outdated or incorrect guidance
+description: A rule, example, or version claim in this skill is wrong or out of date.
+title: "[outdated] "
+labels: ["bug"]
+body:
+  - type: checkboxes
+    id: prior-art
+    attributes:
+      label: Existing reports
+      description: Check before filing.
+      options:
+        - label: I searched existing issues and the relevant `references/*.md` files and did not find this reported.
+          required: true
+  - type: input
+    id: file
+    attributes:
+      label: File
+      description: Which file, e.g. references/concurrency.md
+      placeholder: references/concurrency.md
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Skill version or commit
+      description: Release tag or commit SHA where the claim appears.
+      placeholder: v1.0.0, or main@abc1234
+    validations:
+      required: true
+  - type: textarea
+    id: claim
+    attributes:
+      label: The claim as written
+      description: Quote or paraphrase the specific rule or example that is wrong.
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: What it should say instead
+      render: markdown
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source
+      description: A release note, official doc, or other citation for the correction.
+    validations:
+      required: false

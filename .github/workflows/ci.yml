@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          scandir: "./scripts"
+
+  structural-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run structural checks
+        run: bash scripts/structural-check.sh
+
+  link-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          # Temporary: the release pages 404 until the first release exists.
+          # Remove this exclusion after the first release.
+          args: --no-progress --exclude=github.com/balinomad-skills/go-standards/releases "**/*.md"
+          fail: true
+
+  release-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "1.27"
+      - name: Validate workflow files
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          "$(go env GOPATH)/bin/actionlint" -no-color
+      - name: Smoke-test release artifacts
+        run: |
+          release_asset_dir="${RUNNER_TEMP}/release-assets"
+          bash scripts/package.sh --output-dir "${release_asset_dir}"
+          bash scripts/single-page.sh --output-dir "${release_asset_dir}"
+          test -f "${release_asset_dir}/go-standards.zip"
+          test -f "${release_asset_dir}/go-standards.txt"
+          if unzip -Z1 "${release_asset_dir}/go-standards.zip" | grep -vq '^go-standards/'; then
+            echo "ZIP contains an entry outside the skill folder" >&2
+            exit 1
+          fi
+          expected_files="$(find go-standards -type f -name '*.md' | wc -l)"
+          actual_files="$(grep -c '^--- BEGIN_FILE: .* : .* ---$' "${release_asset_dir}/go-standards.txt")"
+          test "${actual_files}" -eq "${expected_files}"
+          grep -q 'If it asks a question, stop and wait for the answer' "${release_asset_dir}/go-standards.txt"
+
+  ci-gate:
+    name: CI gate
+    if: always()
+    needs: [shellcheck, structural-check, link-check, release-tools]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require all jobs to succeed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

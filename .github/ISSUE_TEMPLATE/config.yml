@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or discussion
+    url: https://github.com/balinomad-skills/go-standards/discussions
+    about: For anything that is not a specific correction or a coverage gap.
