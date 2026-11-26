@@ -61,6 +61,20 @@ This skill follows [Semantic Versioning](https://semver.org/). `metadata.version
 
 Record the version in `CHANGELOG.md` in the same pull request. The release tag and the `metadata.version` value must describe the same release.
 
+## Tracking Go releases
+
+This skill follows Go's release cadence. Update the skill after each `goX.Y.0` release, expected in February and August. Patch releases do not require a skill release unless they change documented behaviour or security guidance.
+
+Checklist for a new Go minor:
+
+1. Read the release notes: language, tools, runtime, compiler, linker, standard library.
+2. Update `references/modernize.md` and the affected reference files.
+3. Update version gates and examples.
+4. Update the CI matrix example in `references/ci.md`.
+5. Update `metadata.go_reviewed` and `metadata.updated`.
+6. Bump `metadata.version` as a MINOR, add a `CHANGELOG.md` entry, and run the structural check.
+7. Merge and tag the release.
+
 ## Verifying a change before submitting
 
 ```bash
