@@ -8,14 +8,19 @@ Execute Part 1 exactly ONCE upon ingestion to establish session constraints. Enf
 
 Scan provided files in order of reliability:
 
-| Source                  | What to read                         |
-| ----------------------- | ------------------------------------ |
-| `go.mod`                | `go 1.xx` directive (primary source) |
-| `version.go` or similar | `const Version = "x.y.z"`            |
-| Conversation            | Explicit statement by user           |
+| Source       | What to read                                     |
+| ------------ | ------------------------------------------------ |
+| `go.mod`     | `go 1.xx` directive (language floor)             |
+| `go.mod`     | `toolchain go1.xx.y` directive (build toolchain) |
+| Conversation | `GOTOOLCHAIN` setting, if stated                 |
+| Conversation | Explicit minimum version statement               |
+
+If the `go` and `toolchain` directives differ, report both: `go 1.25 language floor; go1.27.4 toolchain`. The `go` directive controls language features; the toolchain controls the compiler, runtime, and standard library.
 
 - **IF a version is detected:** Announce the detected version:
   > `[Source]`: go `[version]` detected.
+- **IF the language floor and toolchain differ:** Report both instead of the single version:
+  > `go.mod`: go `[language floor]` language floor; `[toolchain]` detected.
 - **IF no files are provided OR no version is detected:** Prompt the user:
   > No Go version detected. What is the minimum target version?
 
@@ -75,7 +80,7 @@ User may override any axis at this point or at any time during the session.
 
 **Non-strict**: write code compatible with the declared version. When a newer version enables meaningfully better code, present the alternative in a separate block with a clear annotation. The primary solution always compiles on the declared version.
 
-"Meaningfully better" means genuine improvement in correctness, safety, performance, or clarity, not cosmetic differences. Examples: generics (1.18), `slog` (1.21), loop variable capture fix (1.22), `iter` (1.23), `b.Loop()` in benchmarks (1.24).
+"Meaningfully better" means genuine improvement in correctness, safety, performance, or clarity, not cosmetic differences. Examples: generics (1.18), `slog` (1.21), loop variable capture fix (1.22), `iter` (1.23), `b.Loop()` (1.24), `testing/synctest` and container-aware `GOMAXPROCS` (1.25), `new(expr)` (1.26), generic methods and `encoding/json/v2` (1.27).
 
 **Output format for non-strict alternatives:**
 

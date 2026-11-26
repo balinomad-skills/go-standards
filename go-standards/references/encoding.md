@@ -15,6 +15,10 @@ The single behavior difference most likely to bite during a v1-to-v2 migration: 
 
 The examples below use v1 syntax, which remains the more common baseline; each includes a note where v2 differs.
 
+The v2 package adds streaming entry points that do not buffer the whole value: `MarshalWrite`, `MarshalEncode`, `UnmarshalRead`, and `UnmarshalDecode`. All v2 functions accept variadic `Options`, so encode and decode settings are explicit rather than global.
+
+If a Go 1.27 binary needs the v1 implementation for compatibility, build with `GOEXPERIMENT=nojsonv2`. The opt-out is expected to be removed in a later release.
+
 ## Struct Tags and omitempty
 
 ```go

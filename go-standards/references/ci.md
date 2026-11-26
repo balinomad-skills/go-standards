@@ -53,9 +53,9 @@ jobs:
       fail-fast: false
       matrix:
         # Adapt to your go.mod minimum version:
-        # go 1.23 → ["1.23", "1.24", "stable"]
-        # go 1.24 → ["1.24", "stable"]
-        go: ["1.23", "1.24", "stable"]
+        # go 1.26 → ["1.26", "1.27", "stable"]
+        # go 1.27 → ["1.27", "stable"]
+        go: ["1.26", "1.27", "stable"]
 
     steps:
       - uses: actions/checkout@v7

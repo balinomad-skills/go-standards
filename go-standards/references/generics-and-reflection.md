@@ -81,6 +81,22 @@ func (s *Stack[T]) Pop() (T, bool) {
 
 Every generic type needs an explicit zero value (`var zero T`) for a "not found" return path. `nil` does not compile for a bare type parameter unless the constraint guarantees a pointer, slice, map, channel, function, or interface type.
 
+## Self-referential type constraints (Go 1.26+)
+
+A generic type may refer to itself in its type parameter list, which allows constraints such as "a type that can add its own type":
+
+```go
+type Adder[A Adder[A]] interface {
+    Add(A) A
+}
+
+func Sum[A Adder[A]](x, y A) A {
+    return x.Add(y)
+}
+```
+
+The self-reference is checked by the compiler each time the constraint is instantiated. It requires Go 1.26 or later; earlier versions need a separate non-generic interface and runtime type assertions.
+
 ## Generic Methods (Go 1.27+)
 
 Before Go 1.27, a method could use its receiver's type parameters but could not declare new ones of its own; any function needing its own type parameter had to be a package-level function. Go 1.27 lifted this restriction: a method may now declare type parameters that are independent of its receiver's.

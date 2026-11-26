@@ -146,6 +146,34 @@ runtime.GOMAXPROCS(containerCPULimit)
 
 Confirm the actual Go toolchain version in use (`references/project-context.md`) before deciding which of these two paths applies; do not assume 1.25+ behaviour is active just because the code targets a recent language version in `go.mod`, since `go.mod`'s `go` directive sets a language-feature floor, not the exact toolchain used to build the running binary.
 
+## Runtime defaults
+
+Go 1.26 enables the Green Tea garbage collector by default. It improves marking and scanning of small objects and reports a 10 to 40% reduction in GC overhead for GC-heavy programs. It requires no code change. The Go 1.26 opt-out is `GOEXPERIMENT=nogreenteagc`; the opt-out is expected to be removed in a later release.
+
+Go 1.27 adds size-specialized allocation for objects smaller than 80 bytes, with an expected ~1% improvement in allocation-heavy programs and a ~60 KB binary size increase. The opt-out is `GOEXPERIMENT=nosizespecializedmalloc`, expected to be removed in Go 1.28.
+
+Go 1.26 reduces the baseline runtime overhead of cgo calls by about 30%.
+
+Re-measure after a toolchain upgrade. Do not carry `GOGC` or `GOMEMLIMIT` values forward without a benchmark on the new runtime.
+
+## Interning and weak references
+
+Use `unique.Make` (Go 1.23+) to intern immutable values that repeat often, such as strings parsed from a protocol. Equal values share one canonical representation, so two handles compare with `==` without comparing the value.
+
+Use `weak.Make` (Go 1.24+) for caches that must not keep values alive. A weak pointer returns `nil` after the value is collected. Combine it with `runtime.AddCleanup` when the cached value owns a resource that needs explicit release.
+
+```go
+type cacheKey struct{ name string }
+
+h := unique.Make(cacheKey{name: "orders"})
+v := h.Value()
+
+w := weak.Make(&bigValue)
+if p := w.Value(); p != nil {
+    use(p)
+}
+```
+
 ## Benchmark discipline
 
 Write benchmarks before and after any performance change to confirm the improvement with data. Always run with `-benchmem` to surface allocation differences:

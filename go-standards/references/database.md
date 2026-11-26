@@ -116,6 +116,8 @@ orders, _ := getOrdersForUsers(ctx, ids) // one query, map keyed by user ID
 
 Neither is required for `database/sql` to be idiomatic; both are common, well-supported choices when the manual-`Scan` ceremony is the actual pain point.
 
+Driver implementation (`database/sql/driver`) is out of scope for this skill. For driver work, the Go 1.27 additions are `sql.ConvertAssign` and the `driver.RowsColumnScanner` interface.
+
 ## Migrations
 
 Schema migrations are not part of `database/sql`. Pick one tool and commit to its convention (up/down files, a single `schema.sql`, or a declarative diff) rather than hand-rolling `ALTER TABLE` execution in application startup code:

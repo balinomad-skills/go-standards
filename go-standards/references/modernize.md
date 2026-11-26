@@ -102,13 +102,6 @@ key, val, found := strings.Cut(s, ":")
 
 Replace `log.Printf` with structured logging. See `references/observability.md` for full slog patterns.
 
-```go
-import "log/slog"
-
-slog.Info("request received", "method", r.Method, "path", r.URL.Path)
-slog.Error("query failed", "err", err, "user_id", userID)
-```
-
 ## Go 1.22: range over integer
 
 Replace C-style counting loops:
@@ -204,26 +197,11 @@ Replace an existing `tools.go` blank-import file with the `tool` directive when 
 
 ## Go 1.25: testing/synctest
 
-`testing/synctest` (experimental behind `GOEXPERIMENT=synctest` in 1.24, stable in 1.25) provides a fake, controllable clock for testing code built on goroutines, channels, and timers, letting a test advance simulated time instantly instead of sleeping in real time to exercise a timeout or a periodic ticker.
+`testing/synctest` (experimental behind `GOEXPERIMENT=synctest` in 1.24, stable in 1.25) provides a fake, controllable clock for testing code built on goroutines, channels, and timers. Go 1.27 adds `synctest.Sleep`, which combines `time.Sleep` and `synctest.Wait`. See `references/testing.md` for the pattern and version gating.
 
-```go
-synctest.Test(t, func(t *testing.T) {
-    ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-    defer cancel()
+## Go 1.25: WaitGroup.Go
 
-    go func() {
-        time.Sleep(2 * time.Minute)
-        doWork(ctx)
-    }()
-
-    synctest.Wait() // waits until every goroutine in the bubble is durably blocked
-    if ctx.Err() == nil {
-        t.Fatal("expected context to have timed out")
-    }
-})
-```
-
-Every goroutine started inside the `synctest.Test` callback shares one simulated clock, isolated from real wall-clock time; this converts what would otherwise be a slow or flaky sleep-based test of timeout behaviour into a fast, deterministic one.
+`sync.WaitGroup.Go` adds a task to the group and starts it in one call, removing the `Add`/`Done` boilerplate and the risk of a missing `Done`. See `references/concurrency.md` for the pattern and version gating.
 
 ## Go 1.26: new() accepts an expression
 
@@ -244,6 +222,10 @@ See `references/encoding.md` for this pattern applied to an `omitempty` optional
 
 `runtime/pprof` gained an experimental `goroutineleak` profile using reachability analysis to detect goroutines permanently blocked with no path to ever unblock. It stabilised in Go 1.27. See `references/testing.md` for how this complements `goleak`.
 
+## Go 1.26: self-referential type constraints
+
+A generic type may now refer to itself in its type parameter list. See `references/generics-and-reflection.md` for the constraint shape and version gating.
+
 ## Go 1.27: generic methods
 
 A method can now declare type parameters of its own, independent of its receiver's, removing a restriction present since generics were introduced in 1.18. See `references/generics-and-reflection.md` for the full pattern and the pre-1.27 workaround (a package-level function instead of a method).
@@ -255,6 +237,33 @@ Type inference for a generic function now applies beyond direct calls: assigning
 ## Go 1.27: encoding/json/v2 stable
 
 `encoding/json/v2` (and its lower-level `encoding/json/jsontext` streaming companion) graduated from experimental to a stable, supported API. The original `encoding/json` package is unaffected by the Go 1 compatibility promise and remains fully supported; as of 1.27 it is implemented on top of v2 internally, which speeds up unmarshalling for existing v1 callers with no code change required. See `references/encoding.md` for the migration considerations, most notably the nil-slice/nil-map marshalling difference between v1 and v2.
+
+## Go 1.27: promoted fields in struct literals
+
+A struct literal key may name a promoted field from an embedded struct, not only a direct field:
+
+```go
+type Object struct {
+    Name string
+}
+
+type Point3D struct {
+    Object
+    X, Y, Z float64
+}
+
+p := Point3D{Name: "origin", Z: 1}
+```
+
+The embedded field itself can still be set as a whole. A key must not name a promoted field when the same literal also sets the embedded struct, and the embedded fields traversed must not be pointers.
+
+## Go 1.27: strings.CutLast and bytes.CutLast
+
+`strings.CutLast` and `bytes.CutLast` return the text before and after the last occurrence of a separator, the mirror of `Cut`:
+
+```go
+before, after, found := strings.CutLast(path, "/")
+```
 
 ## Common modernize checklist
 
@@ -273,6 +282,14 @@ When reviewing or migrating code, check for these opportunities:
 | `log.Printf(...)` for structured logs              | `slog.Info(...)` with key-value pairs            | 1.21                    |
 | `m = make(map[K]V)` to clear a map                 | `clear(m)`                                       | 1.21                    |
 | `go.uber.org/automaxprocs`                         | runtime default (container-aware)                | 1.25                    |
+| Manual `WaitGroup` add/done boilerplate            | `wg.Go(func(){...})`                             | 1.25                    |
+| Manual path prefix check                           | `os.Root`                                        | 1.24                    |
+| `runtime.SetFinalizer`                             | `runtime.AddCleanup`                             | 1.24                    |
+| `map[string]T` used only to deduplicate values     | `unique.Make`                                    | 1.23                    |
+| Cache that keeps values alive indefinitely         | `weak.Make` with cleanup                         | 1.24                    |
+| Third-party UUID package                           | `uuid.New` / `uuid.Parse`                        | 1.27                    |
+| `strings.LastIndex` + slicing                      | `strings.CutLast`                                | 1.27                    |
+| Separately declared self-referential constraint    | self-referential type parameter constraint       | 1.26                    |
 | Sleep-based test of timers/timeouts                | `testing/synctest`                               | 1.25                    |
 | Throwaway variable to take its address             | `new(expr)`                                      | 1.26                    |
 | Package-level function instead of a generic method | a method with its own type parameters            | 1.27                    |

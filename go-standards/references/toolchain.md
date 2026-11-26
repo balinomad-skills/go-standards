@@ -13,6 +13,22 @@ These run on every project, non-negotiable:
 
 **gofumpt vs gofmt:** `gofumpt` is a stricter superset of `gofmt` that enforces additional blank-line and grouping rules. Prefer `gofumpt` for new projects; it subsumes `gofmt` so they do not conflict. Use `gofmt` as the minimum bar when the project already has a formatter choice locked in.
 
+## Toolchain selection
+
+The `go` directive in `go.mod` is the language version floor. The optional `toolchain` directive selects the toolchain used to build the module when it is newer than the local default:
+
+```text
+go 1.27.0
+
+toolchain go1.27.4
+```
+
+`GOTOOLCHAIN=auto` (the default) downloads the selected toolchain when needed. `GOTOOLCHAIN=local` refuses to download and fails if the local toolchain is older than the directive. Pin `GOTOOLCHAIN` in CI when builds must be reproducible and offline.
+
+The `go` directive also enables language changes: raising it changes compilation semantics. Raise it only after the code and tests pass on that version. For modules with `go 1.27` or later, `go mod tidy` merges duplicate `require` blocks. The result has at most two blocks: one for direct dependencies and one for indirect dependencies.
+
+For FIPS 140-3 builds, see `references/security.md`.
+
 ## Linter: golangci-lint
 
 Use `golangci-lint` with a `.golangci.yml` at the repo root. Recommended linters to enable beyond the defaults:
@@ -58,13 +74,18 @@ When adopting linting on a large legacy codebase, split the work across independ
 
 Reach for the stdlib before adding a dependency. Common cases where stdlib is sufficient and an external package is not needed:
 
-- JSON: `encoding/json` (or `encoding/json/v2` when stable in Go 1.27)
+- JSON: `encoding/json` (or `encoding/json/v2` on Go 1.27+)
 - HTTP: `net/http` + `net/http/httptest`
 - Logging: `log/slog` (Go 1.21+)
 - CLI flags: `flag` for simple tools
 - Config: environment variables via `os.Getenv` for 12-factor apps
 - Slices: `slices` package (Go 1.21+) for sorting, searching, and comparison
 - Maps: `maps` package (Go 1.21+) for cloning, copying, and key listing
+- UUIDs: `uuid` (Go 1.27+) for generation and parsing
+- Random tokens: `crypto/rand.Text` (Go 1.24+)
+- Filesystem confinement: `os.Root` (Go 1.24+) for user-supplied paths
+- Interning: `unique` (Go 1.23+) and `weak` (Go 1.24+) for value interning and non-retaining caches
+- Post-quantum cryptography: `crypto/mlkem` (Go 1.24+) and `crypto/mldsa` (Go 1.27+)
 
 ## Choosing third-party packages
 
@@ -76,7 +97,15 @@ Use the standard library where it covers the need. When a third-party package is
 - **Vulnerability record**: no unpatched CVEs. Run `govulncheck` before adoption and on every dependency update.
 - **Community standing**: used by other well-maintained Go projects; documented; tested; ideally vendored in production systems you can inspect.
 
-No specific package recommendations are made in this skill. The right choice varies by project requirements, team familiarity, and the state of the ecosystem at the time. A package that is the obvious choice today may be unmaintained in two years.
+No specific third-party package recommendations are made in this skill. The right choice varies by project requirements, team familiarity, and the state of the ecosystem at the time. A package that is the obvious choice today may be unmaintained in two years.
+
+## Modernisation
+
+Run `go fix ./...` after a toolchain upgrade on Go 1.26+. It applies the standard modernizers and any `//go:fix inline` directives. Review the diff; `go fix` is not a substitute for tests.
+
+Go 1.27's `gofmt` changes column alignment for a small number of files, so a format-only diff may appear after the upgrade. Commit that reformat separately from functional changes.
+
+`go test` on Go 1.27 runs the `stdversion` vet check by default. It reports standard library symbols that are too new for the `go` directive or the file's build tags, which catches a missing version gate before release.
 
 ## Dependency hygiene
 
@@ -84,8 +113,3 @@ No specific package recommendations are made in this skill. The right choice var
 - Prefer packages with minimal transitive dependencies.
 - Pin indirect dependencies to known-good versions in `go.sum`.
 - Run `govulncheck ./...` in CI to catch known vulnerabilities. For the GitHub Actions job that enforces this, see `references/ci.md`.
-
-```bash
-go install golang.org/x/vuln/cmd/govulncheck@latest
-govulncheck ./...
-```

@@ -37,15 +37,74 @@ func generateToken(n int) (string, error) {
 }
 ```
 
-## Path traversal
-
-Sanitise file paths derived from user input to prevent directory traversal:
+On Go 1.24+, `crypto/rand.Text` returns a cryptographically secure random string in the RFC 4648 base32 alphabet. It contains at least 128 bits of randomness and is the shortest safe choice when a text token is acceptable:
 
 ```go
-// BAD: user could pass "../../etc/passwd"
-path := filepath.Join(baseDir, userInput)
+token := rand.Text()
+```
 
-// GOOD: verify the resolved path is within the expected root
+`crypto/rand.Read` is guaranteed not to fail in Go 1.24+; the error is always nil, but keep the error check when the minimum version is lower.
+
+UUIDs are identifiers, not secrets. Use `rand.Text` or `rand.Read` for tokens; do not treat `uuid.New` as a source of unguessable credentials.
+
+## Modern cryptography (Go 1.24+)
+
+Use the standard library before adding a third-party cryptography dependency.
+
+- `crypto/mlkem` (Go 1.24+) implements ML-KEM-768 and ML-KEM-1024, the post-quantum key encapsulation mechanism in FIPS 203. Go 1.24+ enables the X25519MLKEM768 hybrid key exchange in TLS 1.3 by default; no code change is required for TLS clients and servers.
+- `crypto/mldsa` (Go 1.27+) implements ML-DSA-44, ML-DSA-65, and ML-DSA-87, the post-quantum signature scheme in FIPS 204. Go 1.27 adds ML-DSA support to `crypto/x509` and TLS 1.3. The package is unavailable with the FIPS 140-3 module v1.0.0; use module v1.26.0 or later.
+- `crypto/hpke` (Go 1.26+) implements Hybrid Public Key Encryption (RFC 9180), including post-quantum hybrid KEMs.
+- `crypto/hkdf`, `crypto/pbkdf2`, and `crypto/sha3` (Go 1.24+) cover key derivation and SHA-3.
+
+Use ML-KEM when you need key establishment and ML-DSA when you need signatures. Do not compose a new scheme from primitives; use HPKE or TLS when you need a complete protocol.
+
+```go
+// Go 1.24+: ML-KEM-768 key encapsulation
+dk, err := mlkem.GenerateKey768()
+if err != nil {
+    return err
+}
+sharedKey, ciphertext := dk.EncapsulationKey().Encapsulate()
+// Send ciphertext to the holder of dk; both sides now share sharedKey.
+```
+
+The recipient recovers the same key with `dk.Decapsulate(ciphertext)`. The decapsulation key must remain secret.
+
+## FIPS 140-3 (Go 1.24+)
+
+For regulated deployments, build with the Go Cryptographic Module:
+
+```bash
+GOFIPS140=latest go build ./...
+```
+
+`GOFIPS140` selects the module version at build time. At runtime, `GODEBUG=fips140=on` enables FIPS 140-3 mode, and `GODEBUG=fips140=only` rejects non-approved algorithms. The `crypto/fips140` package reports the module version and enforcement state.
+
+`fips140=only` is a best-effort testing and debugging mode, not a production setting. It can panic or return errors by design. Most programs should enable FIPS mode with `GOFIPS140` at build time instead.
+
+## Path traversal
+
+Sanitise file paths derived from user input to prevent directory traversal.
+
+On Go 1.24+, use `os.Root` for directory-limited access. It rejects `..` segments and symlinks that resolve outside the root:
+
+```go
+root, err := os.OpenRoot(baseDir)
+if err != nil {
+    return err
+}
+defer root.Close()
+
+f, err := root.Open(userInput)
+if err != nil {
+    return fmt.Errorf("open %q: %w", userInput, err)
+}
+defer f.Close()
+```
+
+Before Go 1.24, a prefix check on `filepath.Clean` is the minimum, but it does not stop symlink escapes:
+
+```go
 func safePath(base, name string) (string, error) {
     clean := filepath.Join(base, filepath.Clean("/"+name))
     if !strings.HasPrefix(clean, filepath.Clean(base)+string(os.PathSeparator)) {
@@ -92,7 +151,7 @@ func (c Credentials) String() string {
 }
 ```
 
-- Use `memguard` or explicit `runtime.SetFinalizer` zeroing for long-lived in-memory secrets when the security model requires it.
+- Use `memguard` or `runtime.AddCleanup` for long-lived in-memory secrets when the security model requires it. On Go 1.24+, prefer `AddCleanup`; new code should not use `runtime.SetFinalizer`.
 
 ## Integer overflow and conversion
 
@@ -129,6 +188,20 @@ func secureHeaders(next http.Handler) http.Handler {
     })
 }
 ```
+
+## CSRF protection (Go 1.25+)
+
+For browser-facing services, `http.CrossOriginProtection` rejects unsafe cross-origin requests using Fetch metadata. It does not require tokens or cookies:
+
+```go
+protection := http.NewCrossOriginProtection()
+if err := protection.AddTrustedOrigin("https://app.example.com"); err != nil {
+    return err
+}
+handler = protection.Handler(handler)
+```
+
+Wrap the outermost handler so every route is covered. Keep token-based CSRF protection for clients that do not send Fetch metadata, and for state-changing requests from non-browser clients that cannot be distinguished by origin.
 
 ## HTTP client timeouts
 

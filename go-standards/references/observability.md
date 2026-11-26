@@ -43,6 +43,20 @@ slog.SetDefault(slog.New(h))
 
 Use `slog.NewJSONHandler` in production (machine-readable). Use `slog.NewTextHandler` in local development (human-readable).
 
+### Combining handlers and groups (Go 1.26+)
+
+`slog.NewMultiHandler` (Go 1.26+) sends each record to several handlers, for example JSON to stdout and text to a local file. `slog.GroupAttrs` (Go 1.25+) builds a grouped attribute for one argument, and `slog.DiscardHandler` (Go 1.24+) discards output without a nil handler check.
+
+```go
+logger := slog.New(slog.NewMultiHandler(
+    slog.NewJSONHandler(os.Stdout, nil),
+    slog.NewTextHandler(logFile, nil),
+))
+logger.Info("started", slog.GroupAttrs("build", slog.String("version", v)))
+```
+
+`Record.Source()` (Go 1.25+) returns the source location captured for a record. Enable capture with `slog.HandlerOptions.AddSource`.
+
 ### What to log
 
 - **Info**: significant transitions (request start/end, job submitted, config loaded)

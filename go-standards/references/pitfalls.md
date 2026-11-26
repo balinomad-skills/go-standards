@@ -231,15 +231,7 @@ m := make(map[string]int, len(items))  // avoids repeated rehashing
 
 ## Nil slice vs empty slice: JSON serialization
 
-A nil slice marshals to `null` in JSON. An empty (non-nil) slice marshals to `[]`. For API responses this distinction matters, and the exact rule differs between `encoding/json` and `encoding/json/v2` as of Go 1.27, see `references/encoding.md`.
-
-```go
-var nilSlice []string    // marshals → null
-emptySlice := []string{} // marshals → []
-
-json.Marshal(nilSlice)    // []byte("null")
-json.Marshal(emptySlice)  // []byte("[]")
-```
+See `references/encoding.md` for how v1 and v2 marshal nil slices and nil maps.
 
 **Rule:** initialise slices that will be returned to callers, especially in API response types. Use `var s []T` only when `nil` is a meaningful sentinel (e.g., "field was not set").
 
@@ -309,6 +301,26 @@ c.A.Describe() // fine: explicit
 ```
 
 Embedding also silently promotes every exported method the embedded type has today, and every exported method added to it in the future, into the outer type's method set. Treat embedding as an API commitment, not a convenience shortcut, especially when embedding a type from another package: a later addition to that type's method set becomes part of the outer type's public API without any change to the outer type's own source. See `references/interfaces.md` for when embedding is, and is not, the right composition tool.
+
+## Wrapping an error pointer with %w
+
+This is the failing case for the `%w` pointer rule in `references/error-handling.md`. The wrapped value has type `*E`, so `errors.Is(err, E{})` and `errors.As(err, &e)` for a value `E` usually fail:
+
+```go
+type ParseError struct{ msg string }
+
+func (e ParseError) Error() string { return e.msg }
+
+var pe *ParseError = &ParseError{msg: "bad input"}
+err := fmt.Errorf("parse: %w", pe)
+
+var target ParseError
+if errors.As(err, &target) { // false: the wrapped value is *ParseError
+    // ...
+}
+```
+
+Wrap the value, or use `errors.As` with a `**ParseError` target when the pointer is the intended error type.
 
 ## init() abuse
 

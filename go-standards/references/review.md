@@ -87,7 +87,7 @@ No migration notes unless explicitly requested.
 
 ## Cyclomatic complexity
 
-Keep gocyclo complexity of changed functions under 15. Flag existing functions above 15 when they are touched.
+Keep gocyclo complexity under 15 for changed functions and for test functions. Flag existing functions above 15 when they are touched.
 
 ## Dependency philosophy
 

@@ -34,6 +34,8 @@ return err
 
 Error strings are lowercase with no trailing punctuation; they compose: `"open config: read file: unexpected EOF"` not `"Failed to open config!"`.
 
+Go 1.27's `printf` vet analyzer reports `fmt.Errorf("...: %w", p)` when `p` has type `*E` and `E` itself implements `error`. Wrapping the pointer usually breaks `errors.Is` and `errors.As` against the value type. Wrap the value unless the pointer itself is the error type.
+
 ## Sentinel errors
 
 Define at package level when callers need to distinguish them:

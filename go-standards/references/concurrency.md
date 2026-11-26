@@ -147,6 +147,20 @@ for _, task := range tasks {
 wg.Wait()
 ```
 
+On Go 1.25+, `WaitGroup.Go` combines `Add(1)`, the goroutine, and `Done`:
+
+```go
+var wg sync.WaitGroup
+for _, task := range tasks {
+    wg.Go(func() {
+        process(task) // Go 1.22+ loop variable semantics
+    })
+}
+wg.Wait()
+```
+
+Use the explicit `Add`/`Done` form when the goroutine is not created at the same point as the `Add`, or when the minimum version is below 1.25.
+
 ## errgroup: concurrent tasks with error propagation
 
 Prefer `golang.org/x/sync/errgroup` over raw WaitGroup when goroutines can fail:
@@ -235,6 +249,12 @@ func GetService() *Service {
 ```
 
 Use `sync/atomic` for a single word-sized value updated independently. Use `sync.Mutex` when two or more fields or an invariant must change together.
+
+## Object cleanup (Go 1.24+)
+
+Use `runtime.AddCleanup` instead of `runtime.SetFinalizer` for cleanup tied to object lifetime. `AddCleanup` supports interior pointers, allows multiple cleanups per object, and does not delay collection. Pair it with `weak`. See `references/performance.md` for the weak cache guidance.
+
+See `references/security.md` for zeroing long-lived secrets.
 
 ## The Go memory model, briefly
 

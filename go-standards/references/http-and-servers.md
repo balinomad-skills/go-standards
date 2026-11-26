@@ -83,6 +83,12 @@ func Recover(next http.Handler) http.Handler {
 }
 ```
 
+## Cross-origin requests
+
+For browser-facing services on Go 1.25+, wrap the outermost handler with `http.CrossOriginProtection`. See `references/security.md` for construction and trusted-origin setup.
+
+Safe methods (`GET`, `HEAD`, `OPTIONS`) are always allowed. Do not perform state changes in them.
+
 ## Server Timeouts
 
 `http.ListenAndServe(addr, handler)` configures no timeouts at all. A client that opens a connection and sends headers one byte at a time can hold that connection, and a worker goroutine, open indefinitely (a Slowloris-style resource exhaustion). Always construct an explicit `http.Server`:
@@ -141,6 +147,12 @@ func getUser(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(user)
 }
 ```
+
+## Recent net/http additions
+
+- Go 1.25: `http.CrossOriginProtection` for CSRF defence.
+- Go 1.26: `HTTP2Config.StrictMaxConcurrentRequests` and `Transport.NewClientConn`.
+- Go 1.27: `Server.MaxHeaderValueCount`, HTTP/2 priority control with `Server.DisableClientPriority`, ALPN on user-provided connections, and `httptest.NewTestServer` for tests inside a `testing/synctest` bubble.
 
 ## Reusing http.Client
 

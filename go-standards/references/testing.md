@@ -203,9 +203,9 @@ Store fixtures in `testdata/` directories (ignored by the Go build tool). Path i
 data, err := os.ReadFile("testdata/input.json")
 ```
 
-## Cyclomatic complexity
+## Test complexity
 
-Keep gocyclo complexity of test functions under 15.
+See `references/review.md` for the gocyclo limit that applies to test functions.
 
 ## Coverage and race
 
@@ -243,6 +243,40 @@ func TestFoo(t *testing.T) {
 
 Go 1.26 introduced an experimental `goroutineleak` profile in `runtime/pprof`, using reachability analysis to find goroutines permanently blocked on a channel, mutex, or similar primitive; it graduated to a regular, generally-available profile in Go 1.27, and is also exposed through `net/http/pprof` on a running service. This is a different tool for a related job: `goleak` is a `go test`-time assertion, wired into the test binary; the `runtime/pprof` profile is a production-safe diagnostic that can be pulled from a live process with no test-only dependency involved. On Go 1.26 or later, check whether the built-in profile already covers a given leak-detection need, particularly for diagnosing a suspected leak in a running service, before reaching for `goleak` in a package that does not already depend on it.
 
+## testing/synctest (Go 1.25+)
+
+`testing/synctest` provides a fake clock for tests built on goroutines, channels, and timers. It makes timeout and ticker tests deterministic and fast.
+
+```go
+func TestTimeout(t *testing.T) {
+    synctest.Test(t, func(t *testing.T) {
+        ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+        defer cancel()
+
+        go func() {
+            <-ctx.Done()
+        }()
+
+        synctest.Sleep(2 * time.Second) // Go 1.27+
+        if ctx.Err() != context.DeadlineExceeded {
+            t.Fatal("timeout did not fire")
+        }
+    })
+}
+```
+
+`synctest.Sleep` was added in Go 1.27. On Go 1.25 and 1.26, use `time.Sleep` followed by `synctest.Wait()`. Every goroutine started inside the bubble shares the simulated clock.
+
+Use `httptest.NewTestServer` (Go 1.27+) to give an HTTP server an in-memory network inside a synctest bubble:
+
+```go
+synctest.Test(t, func(t *testing.T) {
+    srv := httptest.NewTestServer(t, handler)
+    defer srv.Close()
+    // Requests to srv.URL run on the bubble's clock and network.
+})
+```
+
 ## Integration tests
 
 Separate integration tests from unit tests using build tags:
@@ -277,3 +311,24 @@ func TestWithContext(t *testing.T) {
     // ...
 }
 ```
+
+## Test attributes (Go 1.25+)
+
+`t.Attr`, `b.Attr`, and `f.Attr` attach key-value metadata to the test log:
+
+```go
+t.Attr("component", "cache")
+```
+
+## Deterministic crypto tests (Go 1.26+)
+
+`testing/cryptotest.SetGlobalRandom` supplies deterministic randomness to crypto APIs that ignore their `random` parameter:
+
+```go
+func TestSeal(t *testing.T) {
+    cryptotest.SetGlobalRandom(t, 1)
+    // ...
+}
+```
+
+It affects the whole process, so it cannot be used in parallel tests or tests with parallel ancestors. The way cryptographic algorithms consume randomness is not specified and may change, so assert on behaviour rather than on exact ciphertext.
