@@ -21,8 +21,6 @@ Out of scope:
 
 In-scope risks are caught by reviewing the diff before merge, the same as any other change. Report a vulnerability through GitHub private vulnerability reporting: open the repository's Security tab and select "Report a vulnerability". Do not open a public issue for an in-scope risk. Include the details below.
 
-The repository must have private vulnerability reporting enabled in Settings > Code security for this channel to appear.
-
 Include as much of this as applies:
 
 - Affected file and line.
