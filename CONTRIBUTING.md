@@ -50,6 +50,16 @@ Pull requests are reviewed against this project's own skill-assessment criteria 
 
 Update `CHANGELOG.md`, `README.md`, and relevant docs when a change affects users. State what changed and why. If no documentation change is needed, note that in the pull request.
 
+## Versioning
+
+This skill follows [Semantic Versioning](https://semver.org/). `metadata.version` in `go-standards/SKILL.md` holds the bare version, for example `1.0.0`, with no `v` prefix. Release tags add the prefix, for example `v1.0.0`.
+
+- **MAJOR**: guidance that users depend on is removed or reversed, or the routing and always-on behaviour changes in a way that invalidates results produced under the previous version.
+- **MINOR**: new guidance, a new reference file, or new task coverage is added without invalidating existing behaviour.
+- **PATCH**: a correction that does not change what the skill tells a model to do, such as a typo, a broken link, or a factually wrong claim.
+
+Record the version in `CHANGELOG.md` in the same pull request. The release tag and the `metadata.version` value must describe the same release.
+
 ## Verifying a change before submitting
 
 ```bash
