@@ -32,13 +32,14 @@ This repository publishes one Agent Skill under `go-standards/`. A skill is vali
 - Do not use horizontal rules between sections.
 - Do not use bold text as a heading substitute.
 
-CI runs three mechanical checks on every pull request. You run one structural check locally and CI runs the other checks automatically.
+CI runs these mechanical checks on every pull request. You run one structural check locally and CI runs the other checks automatically.
 
 | Check            | What it verifies                                                                      | Failure meaning                                             |
 | ---------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | ShellCheck       | Shell syntax and common mistakes in `scripts/*.sh`.                                   | A copied script may fail at runtime or behave unexpectedly. |
 | Structural check | `SKILL.md` frontmatter, routing rows, and cross-references when `references/` exists. | The skill structure or its reference links are invalid.     |
 | Link check       | Markdown links across the repository.                                                 | A link points to a missing target.                          |
+| Release tools    | Builds the release assets, runs actionlint, and checks their structure.               | A release would publish a broken or incomplete artifact.    |
 
 CI does not check content accuracy, duplication, SKILL.md body length, naming, description rules, or Markdown style. Those are a human review step.
 
@@ -66,4 +67,4 @@ Record the version in `CHANGELOG.md` in the same pull request. The release tag a
 bash scripts/structural-check.sh
 ```
 
-This runs the structural check described above. It checks `SKILL.md` frontmatter and, when `references/` exists, routing rows and cross-references. A single `SKILL.md` with no `references/` directory is valid. Fix whatever the check reports before opening the pull request. CI runs ShellCheck, the structural check, and the link check on the pull request.
+This runs the structural check described above. It checks `SKILL.md` frontmatter and, when `references/` exists, routing rows and cross-references. A single `SKILL.md` with no `references/` directory is valid. Fix whatever the check reports before opening the pull request. CI runs ShellCheck, the structural check, the link check, and the release-tools check on the pull request.
