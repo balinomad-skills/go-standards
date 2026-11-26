@@ -38,9 +38,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: lycheeverse/lychee-action@v2
         with:
-          # Temporary: the release pages 404 until the first release exists.
-          # Remove this exclusion after the first release.
-          args: --no-progress --exclude=github.com/balinomad-skills/go-standards/releases "**/*.md"
+          args: --no-progress "**/*.md"
           fail: true
 
   release-tools:
