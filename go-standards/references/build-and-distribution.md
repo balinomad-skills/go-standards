@@ -4,7 +4,7 @@ Covers build constraints, embedding static assets, cross-compilation, module ver
 
 ## Build Constraints
 
-`//go:build` is the current syntax (the legacy `// +build` comment form is obsolete; `gofmt` rewrites it automatically and no new code should use it):
+`//go:build` is the current syntax (the legacy `// +build` comment form is obsolete; `gofmt` rewrites it automatically; do not use it in new code):
 
 ```go
 //go:build linux && amd64

@@ -4,7 +4,7 @@ Covers building command-line tools: the `flag` package, Cobra conventions, exit 
 
 ## flag Package
 
-The standard `flag` package is sufficient for a tool with a handful of top-level options and no subcommands:
+The standard `flag` package is sufficient for a tool with no subcommands:
 
 ```go
 var (

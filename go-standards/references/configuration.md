@@ -101,4 +101,4 @@ See `references/security.md` for sourcing secrets (environment variables or a se
 
 ## Config for Libraries vs Services
 
-A library package should accept configuration through its constructor (functional options or a config struct, see `references/interfaces.md`), never by reading environment variables or files itself. Environment-variable and config-file loading belongs exclusively in `main` or in a dedicated `config` package that `main` calls; a library that reads `os.Getenv` internally cannot be reused in a context with a different configuration source, and cannot be unit tested without mutating process-global state.
+A library package accepts configuration through its constructor (functional options or a config struct, see `references/interfaces.md`), and never reads environment variables or files itself. Environment-variable and config-file loading belongs exclusively in `main` or in a dedicated `config` package that `main` calls; a library that reads `os.Getenv` internally cannot be reused in a context with a different configuration source, and cannot be unit tested without mutating process-global state.

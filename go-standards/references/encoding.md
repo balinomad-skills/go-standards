@@ -55,7 +55,7 @@ func (u User) MarshalJSON() ([]byte, error) {
 
 ## Streaming
 
-`json.Marshal`/`json.Unmarshal` load the entire value into memory before returning. For a large payload read from or written to an `io.Reader`/`io.Writer` (an HTTP body, a file), use the streaming forms instead:
+`json.Marshal`/`json.Unmarshal` load the entire value into memory before returning. When the payload may be unbounded, or it is read from or written to a network or file stream, use the streaming forms instead of buffering the whole value:
 
 ```go
 func decodeOrder(r io.Reader) (*Order, error) {

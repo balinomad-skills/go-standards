@@ -215,7 +215,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-For libraries that don't produce binaries, a simple `gh release create` is often sufficient without GoReleaser.
+For a library with no binaries, `gh release create` is sufficient. Use GoReleaser when the release needs compiled binaries for multiple platforms or packaged archives.
 
 ## Common CI mistakes
 

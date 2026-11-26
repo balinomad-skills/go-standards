@@ -31,7 +31,7 @@ myproject/
 
 **`pkg/`**: only if you are intentionally publishing packages for external use. Most projects don't need it.
 
-**Flat is fine**: small projects don't need `cmd/` or `internal/`. A single package at the root is idiomatic for small tools and libraries.
+**Flat is fine**: a project with one package and no separate binaries does not need `cmd/` or `internal/`. A single package at the root is idiomatic for such tools and libraries.
 
 **One package per directory.** No exceptions. Mixed packages in a directory (other than `_test` files) are a build error.
 

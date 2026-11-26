@@ -54,7 +54,7 @@ func Logging(next http.Handler) http.Handler {
 handler := Logging(RequireAuth(mux))
 ```
 
-For a long chain, write a small `chain` helper rather than nesting calls, so the order of application reads top to bottom:
+For three or more layers, or whenever the nesting hides the order of application, use a `chain` helper rather than nesting calls, so the order reads top to bottom:
 
 ```go
 func chain(h http.Handler, mw ...func(http.Handler) http.Handler) http.Handler {

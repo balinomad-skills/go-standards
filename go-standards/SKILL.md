@@ -1,7 +1,7 @@
 ---
 name: go-standards
 description: |
-    Triggers on all Go coding tasks: writing, reviewing, debugging, improving, or discussing the design of Go code, whether or not any file or code is produced. Applies idiomatic Go standards: error handling, naming, concurrency, interfaces, generics, performance, security, testing, HTTP services, database access, encoding, CLI applications, configuration, and build/distribution. Also triggers when .go files, go.mod, or go.sum are present. Keywords: golang, goroutine, go module, Go project, Go service, generics, net/http, database/sql, encoding/json. Does not apply to general software engineering questions that mention Go incidentally, or to non-Go code in a mixed-language project.
+    Triggers on all Go coding tasks: writing, reviewing, debugging, improving, or discussing the design of Go code, whether or not any file or code is produced. Applies idiomatic Go standards: error handling, naming, concurrency, interfaces, generics, performance, security, testing, HTTP services, database access, encoding, CLI applications, configuration, build/distribution, tooling, and CI for Go projects. Also triggers when .go files, go.mod, or go.sum are present. Keywords: golang, goroutine, go module, Go project, Go service, generics, net/http, database/sql, encoding/json. Does not apply to general software engineering questions that mention Go incidentally, or to non-Go code in a mixed-language project.
 metadata:
     version: 1.0.0
     updated: 2026-11-26
@@ -12,10 +12,11 @@ metadata:
 
 ## Scope
 
-This skill covers Go source code only. For documentation formatting, follow the repository's Markdown conventions. For architecture decisions that span languages, apply this skill only to the Go components. This skill covers only the Go-side API usage in `references/database.md` (connection handling, context propagation, transactions, scanning), not SQL query design, schema design, or query performance tuning.
+This skill covers Go source code and the Go-specific project files that build, lint, test, and release it. For documentation formatting, follow the repository's Markdown conventions. For architecture decisions that span languages, apply this skill only to the Go components. This skill covers only the Go-side API usage in `references/database.md` (connection handling, context propagation, transactions, scanning), not SQL query design, schema design, or query performance tuning.
 
 ## Behaviour (always applies)
 
+- `Always` and `Never` are mandatory. `Prefer` is a recommendation. Declarative rules are requirements. Do not use `should` to state a requirement.
 - Skip Go basics unless asked.
 - Remove trailing whitespace from output. No redundant blank lines in code blocks.
 - If a request can be answered correctly without clarification, answer it. Ask only when the missing information affects correctness, behaviour, or API design. When you must ask:
@@ -27,7 +28,7 @@ Wait for confirmation before applying any assumption-driven change.
 
 ## Initialization Protocol (Delegated)
 
-The session-start protocol is strictly delegated to `references/project-context.md`. Immediately read and execute that file in its entirety to establish the operational baseline.
+The session-start protocol is strictly delegated to `references/project-context.md`. Immediately read and follow that file in its entirety to establish the operational baseline.
 
 ## Reference files: load based on task
 
@@ -53,7 +54,7 @@ The session-start protocol is strictly delegated to `references/project-context.
 | Configuration loading, environment variables, config validation             | `references/configuration.md`                                                                               |
 | Build constraints, go:embed, cross-compilation, module versioning           | `references/build-and-distribution.md`                                                                      |
 | Session-start version protocol, release context                             | `references/project-context.md`                                                                             |
-| General Go question (no code provided)                                      | `references/naming.md` only                                                                                 |
+| General Go question with no identifiable topic                              | `references/naming.md` only                                                                                 |
 
 Load only what the task requires. Never pre-load all files. The first two rows are base rows; a topic row applies in addition to the base row for the same task, not instead of it.
 

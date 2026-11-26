@@ -4,7 +4,7 @@ Covers the Go-side API for talking to a relational database: connection pooling,
 
 ## Connection Pool Configuration
 
-`*sql.DB` is not a single connection; it is a pool, safe for concurrent use across goroutines. Tune it explicitly rather than accepting the defaults for any service under real load:
+`*sql.DB` is not a single connection; it is a pool, safe for concurrent use across goroutines. Set `SetMaxOpenConns`, `SetMaxIdleConns`, and `SetConnMaxLifetime` explicitly for any service that handles concurrent requests:
 
 ```go
 db, err := sql.Open("pgx", dsn)

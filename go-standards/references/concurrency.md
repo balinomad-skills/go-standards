@@ -234,7 +234,7 @@ func GetService() *Service {
 }
 ```
 
-Use `sync/atomic` for simple counters and flags, not for complex state.
+Use `sync/atomic` for a single word-sized value updated independently. Use `sync.Mutex` when two or more fields or an invariant must change together.
 
 ## The Go memory model, briefly
 
