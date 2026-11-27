@@ -6,15 +6,8 @@ set -euo pipefail
 #
 #   bash scripts/structural-check.sh
 
-readonly SCRIPT_VERSION="1.0"
-
-if [[ "${1:-}" == "--version" ]]; then
-  echo "structural-check.sh ${SCRIPT_VERSION}"
-  exit 0
-fi
-
 if [[ $# -ne 0 ]]; then
-  echo "usage: bash ${0##*/} [--version]" >&2
+  echo "usage: bash ${0##*/}" >&2
   exit 2
 fi
 
@@ -142,6 +135,50 @@ check_frontmatter() {
 }
 
 #######################################
+# Check that SKILL.md declares the MIT license at the top level.
+# Globals:
+#   SKILL_MD, FAILED
+# Outputs:
+#   Failure line to STDERR or result line to STDOUT
+#######################################
+check_license() {
+  local license
+
+  license="$(
+    awk '
+      NR == 1 && $0 == "---" {
+        frontmatter = 1
+        next
+      }
+      frontmatter && $0 == "---" {
+        exit
+      }
+      frontmatter && /^license:[[:space:]]*/ {
+        line = $0
+        sub(/^license:[[:space:]]*/, "", line)
+        sub(/[[:space:]]+#.*$/, "", line)
+        sub(/^["\047]/, "", line)
+        sub(/["\047]$/, "", line)
+        print line
+        exit
+      }
+    ' "${SKILL_MD}"
+  )"
+
+  if [[ -z "${license}" ]]; then
+    err "SKILL.md frontmatter is missing top-level 'license: MIT'"
+    return
+  fi
+
+  if [[ "${license}" != "MIT" ]]; then
+    err "SKILL.md frontmatter must declare 'license: MIT', found '${license}'"
+    return
+  fi
+
+  info "license is MIT"
+}
+
+#######################################
 # Compare SKILL.md routing references with reference files.
 # Globals:
 #   SKILL_DIR, SKILL_MD, FAILED
@@ -227,6 +264,7 @@ check_cross_references_resolve() {
 main() {
   check_skill_md_exists
   check_frontmatter
+  check_license
   check_routing_table_matches_disk
   check_cross_references_resolve
 

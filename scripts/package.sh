@@ -10,26 +10,12 @@ set -euo pipefail
 #
 # Usage:
 #   bash scripts/package.sh --output-dir <dir>
-#   bash scripts/package.sh --version
 #
 # Output:
 #   <output-dir>/go-standards.zip
 
-readonly SCRIPT_VERSION="1.0"
-
-if [[ "${1:-}" == "--version" ]]; then
-  if [[ $# -ne 1 ]]; then
-    echo "usage: bash ${0##*/} --output-dir <dir>" >&2
-    echo "       bash ${0##*/} --version" >&2
-    exit 2
-  fi
-  echo "package.sh ${SCRIPT_VERSION}"
-  exit 0
-fi
-
 if [[ $# -ne 2 || "${1:-}" != "--output-dir" ]]; then
   echo "usage: bash ${0##*/} --output-dir <dir>" >&2
-  echo "       bash ${0##*/} --version" >&2
   exit 2
 fi
 

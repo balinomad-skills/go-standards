@@ -18,6 +18,26 @@ Download `go-standards.zip` from the [latest release](https://github.com/balinom
 unzip go-standards.zip -d ~/.claude/skills
 ```
 
+### skills.sh
+
+```bash
+npx skills add balinomad-skills/go-standards
+```
+
+Requires Node.js with `npx`. The command installs from the repository's default branch, not from the release ZIP. It defaults to project scope. Add `-g` to install for all projects. Add `-a` to target specific agents.
+
+`npx skills update go-standards` keeps the skill up‑to‑date from the repository's default branch.
+
+### SkillMD
+
+```bash
+npx get-skill add balinomad/go-standards
+```
+
+Requires Node.js with `npx`. The command installs the full skill folder, including references. It asks whether to install for the current project or for all projects. Add `-p` to install for the current project. Add `-g` to install for all projects. Add `-a` to target specific agents.
+
+`npx get-skill update go-standards` keeps the skill up to date from SkillMD.
+
 ### claude.ai
 
 Download `go-standards.zip` from the [latest release](https://github.com/balinomad-skills/go-standards/releases/latest), then upload it under Customize > Skills.

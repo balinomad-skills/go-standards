@@ -61,6 +61,8 @@ This skill follows [Semantic Versioning](https://semver.org/). `metadata.version
 
 Record the version in `CHANGELOG.md` in the same pull request. The release tag and the `metadata.version` value must describe the same release.
 
+The repository scripts use a separate version in `scripts/SCRIPT-VERSION`. It is a single monotonic integer, independent of the skill version. Increment it by one when any file under `scripts/` changes.
+
 ## Tracking Go releases
 
 This skill follows Go's release cadence. Update the skill after each `goX.Y.0` release, expected in February and August. Patch releases do not require a skill release unless they change documented behaviour or security guidance.
