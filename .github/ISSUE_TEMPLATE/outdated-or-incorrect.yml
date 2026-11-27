@@ -15,8 +15,8 @@ body:
     id: file
     attributes:
       label: File
-      description: Which file, e.g. references/concurrency.md
-      placeholder: references/concurrency.md
+      description: Which file, e.g. references/testing.md
+      placeholder: references/testing.md
     validations:
       required: true
   - type: input
