@@ -84,7 +84,12 @@ GOFIPS140=latest go build ./...
 
 ## Path traversal
 
-Sanitise file paths derived from user input to prevent directory traversal.
+Sanitise file paths derived from user input to prevent directory traversal. Never use `filepath.Join` with untrusted input when the result must stay under a base directory. It cleans the result but does not confine it; a value such as `../../etc/passwd` escapes:
+
+```go
+// BAD: userInput can contain "../../etc/passwd" and escape baseDir.
+path := filepath.Join(baseDir, userInput)
+```
 
 On Go 1.24+, use `os.Root` for directory-limited access. It rejects `..` segments and symlinks that resolve outside the root:
 
