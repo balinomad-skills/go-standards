@@ -27,31 +27,9 @@ readonly ASSET_DIR
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly REPO_ROOT
 
-# This repository stores the skill in exactly one top-level folder. Derive the
-# name from the folder that contains SKILL.md, not from the checkout directory
-# name, so a renamed checkout (for example a source archive) still works.
-SKILL_MATCHES=()
-while IFS= read -r candidate; do
-  [[ -z "${candidate}" ]] && continue
-  SKILL_MATCHES+=("${candidate}")
-done < <(
-  find "${REPO_ROOT}" -mindepth 1 -maxdepth 1 -type d \
-    -exec test -f '{}/SKILL.md' \; -print | sort
-)
-
-if [[ ${#SKILL_MATCHES[@]} -ne 1 ]]; then
-  echo "error: expected exactly one top-level skill folder containing SKILL.md under ${REPO_ROOT}, found ${#SKILL_MATCHES[@]}" >&2
-  exit 1
-fi
-
-SKILL_NAME="$(basename "${SKILL_MATCHES[0]}")"
+SKILL_NAME="go-standards"
 readonly SKILL_NAME
 readonly SKILL_DIR="${REPO_ROOT}/${SKILL_NAME}"
-
-if [[ ! -d "${SKILL_DIR}" ]]; then
-  echo "error: skill folder not found (${SKILL_DIR})" >&2
-  exit 1
-fi
 
 if [[ ! -f "${SKILL_DIR}/SKILL.md" ]]; then
   echo "error: SKILL.md not found in skill folder (${SKILL_DIR})" >&2
