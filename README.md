@@ -1,6 +1,8 @@
 # go-standards
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Latest release](https://img.shields.io/github/v/release/balinomad-skills/go-standards)](https://github.com/balinomad-skills/go-standards/releases)
+[![CI](https://github.com/balinomad-skills/go-standards/actions/workflows/ci.yml/badge.svg)](https://github.com/balinomad-skills/go-standards/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/balinomad-skills/go-standards)](https://github.com/balinomad-skills/go-standards/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Triggers on all Go coding tasks: writing, reviewing, debugging, improving, or discussing the design of Go code, whether or not any file or code is produced. Applies idiomatic Go standards: error handling, naming, concurrency, interfaces, generics, performance, security, testing, HTTP services, database access, encoding, CLI applications, configuration, build/distribution, tooling, and CI for Go projects. Also triggers when .go files, go.mod, or go.sum are present. Keywords: golang, goroutine, go module, Go project, Go service, generics, net/http, database/sql, encoding/json. Does not apply to general software engineering questions that mention Go incidentally, or to non-Go code in a mixed-language project.
 
